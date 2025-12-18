@@ -3,6 +3,15 @@
   --foreground: #ffffff;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Prevent scrolling globally */
+  overscroll-behavior: none; /* Prevent bounce effects */
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -11,7 +20,4 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* Fix scrollbar issue */
 }

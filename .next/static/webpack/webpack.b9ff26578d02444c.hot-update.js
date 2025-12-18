@@ -9,10 +9,10 @@
  */
 self["webpackHotUpdate_N_E"]("webpack",{},
 /******/ function(__webpack_require__) { // webpackRuntimeModules
-/******/ /* webpack/runtime/get javascript chunk filename */
+/******/ /* webpack/runtime/get mini-css chunk filename */
 /******/ !function() {
-/******/ 	// This function allow to reference async chunks
-/******/ 	__webpack_require__.u = function(chunkId) {
+/******/ 	// This function allow to reference all chunks
+/******/ 	__webpack_require__.miniCssF = function(chunkId) {
 /******/ 		// return url for filenames based on template
 /******/ 		return undefined;
 /******/ 	};
@@ -20,7 +20,7 @@ self["webpackHotUpdate_N_E"]("webpack",{},
 /******/ 
 /******/ /* webpack/runtime/getFullHash */
 /******/ !function() {
-/******/ 	__webpack_require__.h = function() { return "beaf607537602b0f"; }
+/******/ 	__webpack_require__.h = function() { return "591b065b8eeaf27a"; }
 /******/ }();
 /******/ 
 /******/ }
