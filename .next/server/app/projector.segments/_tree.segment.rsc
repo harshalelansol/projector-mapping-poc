@@ -1,2 +1,0 @@
-:HL["/_next/static/chunks/6583986cdc312c0c.css","style"]
-0:{"buildId":"kL_OCDSQhZt-dn8ETKnF4","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"projector","paramType":null,"paramKey":"projector","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
