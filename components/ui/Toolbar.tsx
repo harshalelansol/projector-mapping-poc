@@ -2,15 +2,14 @@
 
 import React from "react";
 import { Paper, ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
-// Using Lucide icons as they are clean, or MUI icons.
-// Plan said MUI Components, but didn't strictly ban Lucide icons.
-// The install included @mui/icons-material. I'll use MUI icons to be consistent with "MUI" request.
 import MouseIcon from "@mui/icons-material/Mouse";
 import CropSquareIcon from "@mui/icons-material/CropSquare";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import DetailsIcon from "@mui/icons-material/Details"; // For Polygon
+import DetailsIcon from "@mui/icons-material/Details";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
+import TextFieldsIcon from "@mui/icons-material/TextFields";
+import CreateIcon from "@mui/icons-material/Create";
 
 interface ToolbarProps {
   activeTool: string;
@@ -71,6 +70,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onSelectTool }) => {
           </ToggleButton>
         </Tooltip>
 
+        <Tooltip title="Free Draw (Pen)" placement="right">
+          <ToggleButton value="freedraw" aria-label="freedraw">
+            <CreateIcon />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title="Add Text" placement="right">
+          <ToggleButton value="text" aria-label="text">
+            <TextFieldsIcon />
+          </ToggleButton>
+        </Tooltip>
         <Tooltip title="Rectangle (R)" placement="right">
           <ToggleButton value="rect" aria-label="rectangle">
             <CropSquareIcon />
@@ -100,6 +109,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onSelectTool }) => {
             <VideoFileIcon />
           </ToggleButton>
         </Tooltip>
+
       </ToggleButtonGroup>
     </Paper>
   );

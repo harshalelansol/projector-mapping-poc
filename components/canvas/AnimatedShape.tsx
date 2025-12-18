@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { Rect, Circle, Image as KonvaImage } from "react-konva";
+import { Rect, Circle, Text, RegularPolygon, Line, Image as KonvaImage } from "react-konva";
 import { ShapeConfig } from "@/lib/types/Shape";
 import Konva from "konva";
 
 interface AnimatedShapeProps {
   shape: ShapeConfig;
-  onSelect: () => void;
+  onSelect: (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => void;
   onChange: (newAttrs: Partial<ShapeConfig>) => void;
 }
 
@@ -91,8 +91,10 @@ const AnimatedShape: React.FC<AnimatedShapeProps> = ({
       }, node.getLayer());
       anim.start();
     } else if (shape.animation === "border-move") {
-      node.stroke("white");
-      node.strokeWidth(4);
+      // Use shape's stroke color or fallback to white if undefined
+      node.stroke(shape.stroke || "white");
+      // Ensure stroke width is visible for animation
+      node.strokeWidth(shape.strokeWidth || 4);
       node.dash([15, 10]);
 
       anim = new Konva.Animation((frame) => {
@@ -114,26 +116,50 @@ const AnimatedShape: React.FC<AnimatedShapeProps> = ({
       }, node.getLayer());
       anim.start();
     } else {
+      // For 'none', ensure static properties are applied
       node.opacity(shape.opacity);
       node.dash([]);
       node.dashOffset(0);
-      node.strokeWidth(shape.strokeWidth);
+      node.stroke(shape.strokeEnabled ? shape.stroke : undefined);
+      node.strokeWidth(shape.strokeEnabled ? shape.strokeWidth || 0 : 0);
     }
 
     return () => {
       if (tween) tween.destroy();
       if (anim) anim.stop();
       if (node) {
-        // Restore static properties
+        // Restore static properties cleanly
         node.opacity(
           shape.animation === "blink" ? shape.opacity : node.opacity()
         );
-        // If we are destroying because animation changed, the new effect will start.
-        // If dragging, we want position to stay.
-        // node.x() is already updated by drag.
+        node.dash([]);
+        node.dashOffset(0);
+        // Reset stroke properties to state values
+        node.stroke(shape.strokeEnabled ? shape.stroke : undefined);
+        node.strokeWidth(shape.strokeEnabled ? shape.strokeWidth || 0 : 0);
       }
     };
   }, [shape.animation, shape.opacity, shape.strokeWidth]);
+
+  // Dedicated effect for Video playback to ensure smooth rendering
+  useEffect(() => {
+      if (shape.mediaType === 'video' && shapeRef.current) {
+          const node = shapeRef.current;
+          const layer = node.getLayer();
+          if (!layer) return;
+
+          // Konva.Animation on a layer will automatically redraw it each frame
+          const anim = new Konva.Animation(() => {
+              // No logic needed here, just the existence of the animation triggers redraws
+          }, layer);
+          
+          anim.start();
+          
+          return () => {
+              anim.stop();
+          };
+      }
+  }, [shape.mediaType, shape.image]);
 
   if (shape.type === "rect") {
     return (
@@ -158,6 +184,38 @@ const AnimatedShape: React.FC<AnimatedShapeProps> = ({
         ref={shapeRef as any}
       />
     );
+  }
+  if (shape.type === "text") {
+    return (
+      <Text
+        {...props}
+        text={shape.text || "Double click to edit"}
+        fontSize={shape.fontSize || 20}
+        fontFamily={shape.fontFamily || "Arial"}
+        fill={shape.fillEnabled ?? true ? shape.fill : undefined}
+        ref={shapeRef as any}
+      />
+    );
+  }
+  if (shape.type === "polygon") {
+    return (
+      <RegularPolygon
+        {...props}
+        sides={shape.sides || 6}
+        radius={shape.radius || 50}
+        ref={shapeRef as any}
+      />
+    );
+  }
+  if (shape.type === "freedraw") {
+      return (
+          <Line
+            {...props}
+            points={shape.points || []}
+            closed={true} // Close the loop for final shape
+            ref={shapeRef as any}
+          />
+      );
   }
   return null;
 };

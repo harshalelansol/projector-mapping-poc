@@ -1,4 +1,4 @@
-export type ShapeType = 'rect' | 'circle' | 'polygon' | 'pento' | 'image';
+export type ShapeType = 'rect' | 'circle' | 'polygon' | 'freedraw' | 'image' | 'text';
 
 export type AnimationType = 'none' | 'blink' | 'sparkle' | 'move' | 'border-move';
 
@@ -11,6 +11,7 @@ export interface ShapeConfig {
   height?: number;
   radius?: number;
   points?: number[];
+  sides?: number; // For regular polygons
   fill: string;
   stroke: string;
   strokeWidth: number;
@@ -25,6 +26,10 @@ export interface ShapeConfig {
   image?: HTMLImageElement | HTMLVideoElement;
   src?: string;
   mediaType?: 'image' | 'video';
+  // Text support
+  text?: string;
+  fontSize?: number;
+  fontFamily?: string;
   // Style flags
   fillEnabled?: boolean;
   strokeEnabled?: boolean;

@@ -25,9 +25,14 @@ export default function ProjectorPage() {
     redo 
   } = useHistory<ShapeConfig[]>([]);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Multi-selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTool, setActiveTool] = useState<string>('select');
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  // Free Draw State
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [currentPoints, setCurrentPoints] = useState<number[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +44,15 @@ export default function ProjectorPage() {
   // Keyboard Shortcuts
   useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
+          // Ignore if user is typing in an input field
+          if (
+              document.activeElement?.tagName === 'INPUT' || 
+              document.activeElement?.tagName === 'TEXTAREA' ||
+              document.activeElement?.tagName === 'SELECT'
+          ) {
+              return;
+          }
+
           // Undo/Redo
           if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
               e.preventDefault();
@@ -47,18 +61,32 @@ export default function ProjectorPage() {
           if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
               e.preventDefault();
               redo();
+              redo();
+          }
+
+          // Finish Drawing (Enter)
+          if (e.key === 'Enter' && isDrawing) {
+              finishDrawing();
+          }
+          // Cancel Drawing (Esc)
+          if (e.key === 'Escape' && isDrawing) {
+              setIsDrawing(false);
+              setCurrentPoints([]);
+              setActiveTool('select');
           }
 
           // Delete
-          if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
-              setShapes(shapes.filter(s => s.id !== selectedId));
-              setSelectedId(null);
+
+          // Delete
+          if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.length > 0) {
+              setShapes(shapes.filter(s => !selectedIds.includes(s.id)));
+              setSelectedIds([]);
           }
       };
 
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, shapes, undo, redo, setShapes]);
+  }, [selectedIds, shapes, undo, redo, setShapes]);
 
   useEffect(() => {
     const w = window.innerWidth;
@@ -79,43 +107,155 @@ export default function ProjectorPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleAddShape = (type: 'rect' | 'circle') => {
+  const handleAddShape = (type: 'rect' | 'circle' | 'text' | 'polygon') => {
     const center = { x: windowSize.width / 2, y: windowSize.height / 2 };
-    const newShape: ShapeConfig = {
-        id: generateId(),
-        type,
-        x: center.x - 50,
-        y: center.y - 50,
-        width: 100,
-        height: 100,
-        radius: 50,
-        fill: '#ffffff',
-        stroke: '#ffffff',
-        strokeWidth: 2,
-        fillEnabled: true,
-        strokeEnabled: false,
-        opacity: 1,
-        rotation: 0,
-        scaleX: 1,
-        scaleY: 1,
-        animation: 'none',
-    };
+    let newShape: ShapeConfig;
+
+    if (type === 'text') {
+        newShape = {
+            id: generateId(),
+            type: 'text',
+            x: center.x - 50,
+            y: center.y - 15,
+            text: 'Visual Logic',
+            fontSize: 32,
+            fontFamily: 'Arial',
+            fill: '#ffffff',
+            stroke: '#ffffff',
+            strokeWidth: 0,
+            fillEnabled: true,
+            strokeEnabled: false,
+            opacity: 1,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            animation: 'none',
+        };
+    } else if (type === 'polygon') {
+         newShape = {
+            id: generateId(),
+            type: 'polygon',
+            x: center.x - 50,
+            y: center.y - 50,
+            radius: 50,
+            sides: 6,
+            fill: '#ffffff',
+            stroke: '#ffffff',
+            strokeWidth: 2,
+            fillEnabled: true,
+            strokeEnabled: false,
+            opacity: 1,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            animation: 'none',
+        };
+    } else {
+        newShape = {
+            id: generateId(),
+            type,
+            x: center.x - 50,
+            y: center.y - 50,
+            width: 100,
+            height: 100,
+            radius: 50,
+            fill: '#ffffff',
+            stroke: '#ffffff',
+            strokeWidth: 2,
+            fillEnabled: true,
+            strokeEnabled: false,
+            opacity: 1,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            animation: 'none',
+        };
+    }
     // Use setShapes from hook which pushes to history
     setShapes([...shapes, newShape]);
-    setSelectedId(newShape.id);
+    setSelectedIds([newShape.id]);
     setActiveTool('select');
   };
 
+  const finishDrawing = () => {
+      if (currentPoints.length < 6) { // Need at least 3 points (6 coords)
+          // Not enough points
+           setIsDrawing(false);
+           setCurrentPoints([]);
+           setActiveTool('select');
+           return;
+      }
+
+      const newShape: ShapeConfig = {
+          id: generateId(),
+          type: 'freedraw',
+          x: 0, y: 0, // Points are absolute for now
+          points: currentPoints,
+          fill: '#ffffff',
+          stroke: '#ffffff',
+          strokeWidth: 2,
+          fillEnabled: false, // Default to outline only
+          strokeEnabled: true,
+          opacity: 1,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+          animation: 'none',
+      };
+      setShapes([...shapes, newShape]);
+      setSelectedIds([newShape.id]);
+      setIsDrawing(false);
+      setCurrentPoints([]);
+      setActiveTool('select');
+  };
+
+  const handleStageClick = (e: any) => {
+      if (!isDrawing || activeTool !== 'freedraw') return;
+
+      // Get pointer position relative to stage
+      const stage = e.target.getStage();
+      const point = stage.getPointerPosition();
+      
+      if (point) {
+          // Check if close to start point (to close the loop)
+          if (currentPoints.length >= 6) { // At least 3 points already
+              const startX = currentPoints[0];
+              const startY = currentPoints[1];
+              const dist = Math.sqrt(Math.pow(point.x - startX, 2) + Math.pow(point.y - startY, 2));
+              
+              if (dist < 15) {
+                  finishDrawing();
+                  return;
+              }
+          }
+
+          setCurrentPoints([...currentPoints, point.x, point.y]);
+      }
+  };
+
   const handleToolSelect = (tool: string) => {
+      // If we were drawing and switched tool, cancel drawing
+      if (isDrawing && tool !== 'freedraw') {
+          setIsDrawing(false);
+          setCurrentPoints([]);
+      }
+
       setActiveTool(tool);
       if (tool === 'rect') {
           handleAddShape('rect');
       } else if (tool === 'circle') {
           handleAddShape('circle');
+      } else if (tool === 'polygon') {
+          handleAddShape('polygon');
+      } else if (tool === 'text') {
+          handleAddShape('text');
       } else if (tool === 'image') {
           fileInputRef.current?.click();
       } else if (tool === 'video') {
          videoInputRef.current?.click();
+      } else if (tool === 'freedraw') {
+          setIsDrawing(true);
+          setCurrentPoints([]);
       }
   };
 
@@ -163,7 +303,7 @@ export default function ProjectorPage() {
       };
       
       setShapes([...shapes, newShape]);
-      setSelectedId(newShape.id);
+      setSelectedIds([newShape.id]);
       setActiveTool('select');
       
       // Reset input
@@ -171,11 +311,36 @@ export default function ProjectorPage() {
   };
 
   const handleShapeChange = (key: keyof ShapeConfig, value: any) => {
-      if (!selectedId) return;
-      setShapes(shapes.map(s => s.id === selectedId ? { ...s, [key]: value } : s));
+      if (selectedIds.length === 0) return;
+      // Apply change to all selected shapes
+      setShapes(shapes.map(s => selectedIds.includes(s.id) ? { ...s, [key]: value } : s));
   };
   
-  const selectedShape = shapes.find(s => s.id === selectedId) || null;
+  const handleDeleteSelected = () => {
+    setShapes(shapes.filter(s => !selectedIds.includes(s.id)));
+    setSelectedIds([]);
+  };
+
+  const selectedShapes = shapes.filter(s => selectedIds.includes(s.id));
+  const primarySelectedShape = selectedShapes.length > 0 ? selectedShapes[selectedShapes.length - 1] : null;
+
+  // Handle selection with modifiers
+  const handleSelect = (id: string | null, isMultiSelect: boolean) => {
+      if (id === null) {
+          // Deselect all
+          setSelectedIds([]);
+      } else {
+          if (isMultiSelect) {
+              if (selectedIds.includes(id)) {
+                  setSelectedIds(selectedIds.filter(sid => sid !== id));
+              } else {
+                  setSelectedIds([...selectedIds, id]);
+              }
+          } else {
+              setSelectedIds([id]);
+          }
+      }
+  };
 
   // Compute Transform
   const transformStyle = (corners.length === 4 && windowSize.width > 0) 
@@ -221,20 +386,40 @@ export default function ProjectorPage() {
          {windowSize.width > 0 && (
           <CanvasWrapper 
             shapes={shapes}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
+            selectedIds={selectedIds}
+            onSelect={handleSelect}
             onChange={setShapes}
             width={windowSize.width}
             height={windowSize.height}
             gridEnabled={true}
             gridSize={gridSize}
+            onStageClick={handleStageClick}
+            drawingShape={isDrawing ? {
+                id: 'temp',
+                type: 'freedraw',
+                x: 0, y: 0,
+                points: currentPoints,
+                fill: 'transparent',
+                stroke: 'yellow', // Highlight internal drawing line
+                strokeWidth: 2,
+                opacity: 0.8,
+                rotation: 0,
+                scaleX: 1, scaleY: 1
+            } as ShapeConfig : null}
           />
          )}
       </Box>
 
       {/* UI Elements */}
       {!projectionMode && <Toolbar activeTool={activeTool} onSelectTool={handleToolSelect} />}
-      {!projectionMode && <PropertyPanel selectedShape={selectedShape} onChange={handleShapeChange} />}
+      {!projectionMode && (
+          <PropertyPanel 
+            selectedShapes={selectedShapes}
+            primaryShape={primarySelectedShape} 
+            onChange={handleShapeChange} 
+            onDelete={handleDeleteSelected}
+          />
+      )}
       
       <CalibrationPanel 
         gridSize={gridSize} 
