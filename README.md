@@ -63,7 +63,7 @@ A powerful, web-based tool for creating dynamic projection mapping visualization
     npm run dev
     ```
 
-4.  Open [http://localhost:3000/projector](http://localhost:3000/projector) in your browser.
+4.  Open [http://localhost:3000/projector](http://localhost:3000) in your browser.
 
 ---
 
