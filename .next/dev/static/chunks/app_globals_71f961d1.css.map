@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///C:/Elansol/Harshal/projector-mapping-poc/app/globals.css"],"sourcesContent":[":root {\n  --background: #000000;\n  --foreground: #ffffff;\n}\n\nhtml, body {\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  overflow: hidden; /* Prevent scrolling globally */\n  overscroll-behavior: none; /* Prevent bounce effects */\n}\n\nbody {\n  color: rgb(var(--foreground-rgb));\n  background: linear-gradient(\n      to bottom,\n      transparent,\n      rgb(var(--background-end-rgb))\n    )\n    rgb(var(--background-start-rgb));\n}\n"],"names":[],"mappings":"AAAA;;;;;AAKA;;;;;;;;;AASA"}}]
+}
