@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { Rect, Circle, Text, RegularPolygon, Line, Image as KonvaImage } from "react-konva";
+import {
+  Rect,
+  Circle,
+  Text,
+  RegularPolygon,
+  Line,
+  Image as KonvaImage,
+} from "react-konva";
 import { ShapeConfig } from "@/lib/types/Shape";
 import Konva from "konva";
 
@@ -143,22 +150,22 @@ const AnimatedShape: React.FC<AnimatedShapeProps> = ({
 
   // Dedicated effect for Video playback to ensure smooth rendering
   useEffect(() => {
-      if (shape.mediaType === 'video' && shapeRef.current) {
-          const node = shapeRef.current;
-          const layer = node.getLayer();
-          if (!layer) return;
+    if (shape.mediaType === "video" && shapeRef.current) {
+      const node = shapeRef.current;
+      const layer = node.getLayer();
+      if (!layer) return;
 
-          // Konva.Animation on a layer will automatically redraw it each frame
-          const anim = new Konva.Animation(() => {
-              // No logic needed here, just the existence of the animation triggers redraws
-          }, layer);
-          
-          anim.start();
-          
-          return () => {
-              anim.stop();
-          };
-      }
+      // Konva.Animation on a layer will automatically redraw it each frame
+      const anim = new Konva.Animation(() => {
+        // No logic needed here, just the existence of the animation triggers redraws
+      }, layer);
+
+      anim.start();
+
+      return () => {
+        anim.stop();
+      };
+    }
   }, [shape.mediaType, shape.image]);
 
   if (shape.type === "rect") {
@@ -208,14 +215,14 @@ const AnimatedShape: React.FC<AnimatedShapeProps> = ({
     );
   }
   if (shape.type === "freedraw") {
-      return (
-          <Line
-            {...props}
-            points={shape.points || []}
-            closed={true} // Close the loop for final shape
-            ref={shapeRef as any}
-          />
-      );
+    return (
+      <Line
+        {...props}
+        points={shape.points || []}
+        closed={true} // Close the loop for final shape
+        ref={shapeRef as any}
+      />
+    );
   }
   return null;
 };

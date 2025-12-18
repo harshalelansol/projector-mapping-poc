@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Layer, Line } from 'react-konva';
+import React from "react";
+import { Layer, Line } from "react-konva";
 
 interface GridLayerProps {
   width: number;
@@ -10,11 +10,16 @@ interface GridLayerProps {
   visible: boolean;
 }
 
-const GridLayer: React.FC<GridLayerProps> = ({ width, height, gridSize, visible }) => {
+const GridLayer: React.FC<GridLayerProps> = ({
+  width,
+  height,
+  gridSize,
+  visible,
+}) => {
   if (!visible) return null;
 
   const lines = [];
-  
+
   // Vertical lines
   for (let i = 0; i < width / gridSize; i++) {
     lines.push(

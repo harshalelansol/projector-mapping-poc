@@ -1,6 +1,17 @@
-export type ShapeType = 'rect' | 'circle' | 'polygon' | 'freedraw' | 'image' | 'text';
+export type ShapeType =
+  | "rect"
+  | "circle"
+  | "polygon"
+  | "freedraw"
+  | "image"
+  | "text";
 
-export type AnimationType = 'none' | 'blink' | 'sparkle' | 'move' | 'border-move';
+export type AnimationType =
+  | "none"
+  | "blink"
+  | "sparkle"
+  | "move"
+  | "border-move";
 
 export interface ShapeConfig {
   id: string;
@@ -25,7 +36,7 @@ export interface ShapeConfig {
   // Media support
   image?: HTMLImageElement | HTMLVideoElement;
   src?: string;
-  mediaType?: 'image' | 'video';
+  mediaType?: "image" | "video";
   // Text support
   text?: string;
   fontSize?: number;

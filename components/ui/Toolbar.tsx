@@ -10,13 +10,26 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import CreateIcon from "@mui/icons-material/Create";
+import UndoIcon from "@mui/icons-material/Undo";
+import RedoIcon from "@mui/icons-material/Redo";
 
 interface ToolbarProps {
   activeTool: string;
   onSelectTool: (tool: string) => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onSelectTool }) => {
+const Toolbar: React.FC<ToolbarProps> = ({
+  activeTool,
+  onSelectTool,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+}) => {
   const handleFormat = (
     event: React.MouseEvent<HTMLElement>,
     newFormat: string | null
@@ -42,6 +55,51 @@ const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onSelectTool }) => {
         border: "1px solid rgba(255, 255, 255, 0.1)",
       }}
     >
+      <ToggleButtonGroup
+        orientation="vertical"
+        exclusive
+        sx={{
+          "& .MuiToggleButton-root": {
+            color: "rgba(255, 255, 255, 0.5)",
+            "&.Mui-disabled": {
+              opacity: 0.3,
+              color: "rgba(255, 255, 255, 0.2)",
+            },
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.05)",
+              color: "#fff",
+            },
+            border: "none",
+            marginY: 0.5,
+            borderRadius: "8px !important",
+          },
+          mb: 1, // Spacing
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          pb: 1,
+        }}
+      >
+        <Tooltip title="Undo (Ctrl+Z)" placement="right">
+          <ToggleButton
+            value="undo"
+            onClick={onUndo}
+            disabled={!canUndo}
+            selected={false}
+          >
+            <UndoIcon />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title="Redo (Ctrl+Y)" placement="right">
+          <ToggleButton
+            value="redo"
+            onClick={onRedo}
+            disabled={!canRedo}
+            selected={false}
+          >
+            <RedoIcon />
+          </ToggleButton>
+        </Tooltip>
+      </ToggleButtonGroup>
+
       <ToggleButtonGroup
         orientation="vertical"
         value={activeTool}
@@ -109,7 +167,6 @@ const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onSelectTool }) => {
             <VideoFileIcon />
           </ToggleButton>
         </Tooltip>
-
       </ToggleButtonGroup>
     </Paper>
   );
