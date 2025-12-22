@@ -10,6 +10,9 @@ import { getPerspectiveTransform } from "@/lib/utils/projection";
 import { ShapeConfig } from "@/lib/types/Shape";
 import { Box } from "@mui/material";
 import useHistory from "@/hooks/useHistory";
+import { savedProjectData } from "@/lib/data/savedProject";
+import { useSearchParams, useRouter } from "next/navigation";
+import { storage } from "@/lib/utils/storage";
 
 // Polyfill for uuid
 const generateId = () => {
@@ -17,15 +20,42 @@ const generateId = () => {
 };
 
 export default function ProjectorPage() {
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const stepId = searchParams.get("stepId");
+  
+  // Load initial data logic:
+  // 1. If stepId exists, try to load from storage.
+  // 2. If step has data, use it.
+  // 3. If step has NO data (new), use 'savedProjectData' as a template or empty.
+  // 4. If no stepId, fall back to savedProjectData (legacy behavior) or redirect.
+  // For now: Ad-hoc is allowed but Save won't work nicely unless stepId exists.
+  
+  const getInitialData = () => {
+    if (stepId) {
+      const step = storage.getStep(stepId);
+      if (step && step.data) {
+        return step.data;
+      }
+      // If step exists but has no data (new step), return null to start empty
+      return null;
+    }
+    // Only use savedProjectData if NO stepId is provided (legacy dev mode)
+    return savedProjectData; 
+  };
+
+  const initialData = getInitialData();
+
   // Use History Hook for Shapes
   const {
-    state: shapes,
+    state: shapes = [],
     setState: setShapes,
     undo,
     redo,
     canUndo,
     canRedo,
-  } = useHistory<ShapeConfig[]>([]);
+  } = useHistory<ShapeConfig[]>(initialData?.shapes || []);
 
   // Multi-selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -39,9 +69,35 @@ export default function ProjectorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const [gridSize, setGridSize] = useState<number>(50);
-  const [projectionMode, setProjectionMode] = useState<boolean>(false);
-  const [corners, setCorners] = useState<{ x: number; y: number }[]>([]);
+  // Initialize Settings from Saved Data
+  const [gridSize, setGridSize] = useState<number>(initialData?.canvas.gridSize || 50);
+  const [projectionMode, setProjectionMode] = useState<boolean>(initialData?.calibration.projectionMode || false);
+  // Initialize corners: Use saved corners if available, otherwise empty (will be set by useEffect on mount fallback)
+  const [corners, setCorners] = useState<{ id: string; x: number; y: number }[]>(initialData?.calibration.corners || []);
+  // Copy/Paste State
+  const [clipboard, setClipboard] = useState<ShapeConfig[]>([]);
+
+  const handleCopy = () => {
+    if (selectedIds.length === 0) return;
+    const selected = shapes.filter((s) => selectedIds.includes(s.id));
+    setClipboard(selected);
+  };
+
+  const handlePaste = () => {
+    if (clipboard.length === 0) return;
+
+    const newShapes = clipboard.map((s) => {
+      return {
+        ...s,
+        id: generateId(),
+        x: s.x + 20,
+        y: s.y + 20,
+      };
+    });
+
+    setShapes([...shapes, ...newShapes]);
+    setSelectedIds(newShapes.map((s) => s.id));
+  };
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -64,6 +120,18 @@ export default function ProjectorPage() {
         e.preventDefault();
         redo();
         redo();
+      }
+
+      // Copy
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        handleCopy();
+      }
+
+      // Paste
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+        e.preventDefault();
+        handlePaste();
       }
 
       // Finish Drawing (Enter)
@@ -91,25 +159,24 @@ export default function ProjectorPage() {
 
     globalThis.addEventListener("keydown", handleKeyDown);
     return () => globalThis.removeEventListener("keydown", handleKeyDown);
-  }, [selectedIds, shapes, undo, redo, setShapes]);
+  }, [selectedIds, shapes, undo, redo, setShapes, clipboard, handleCopy, handlePaste]); // Added dependencies
+
 
   useEffect(() => {
+    // Initialize window size immediately
     const w = globalThis.innerWidth;
     const h = globalThis.innerHeight;
     setWindowSize({ width: w, height: h });
-    setCorners([
-      { x: 0, y: 0 },
-      { x: w, y: 0 },
-      { x: w, y: h },
-      { x: 0, y: h },
-    ]);
 
-    // ... resize logic
-    const handleResize = () => {
-      setWindowSize({ width: globalThis.innerWidth, height: globalThis.innerHeight });
-    };
-    globalThis.addEventListener("resize", handleResize);
-    return () => globalThis.removeEventListener("resize", handleResize);
+    // Fallback: If no saved corners, initialize defaults based on window size
+    if (corners.length === 0) {
+         setCorners([
+            { id: "tl", x: 0, y: 0 },
+            { id: "tr", x: w, y: 0 },
+            { id: "br", x: w, y: h },
+            { id: "bl", x: 0, y: h },
+        ]);
+    }
   }, []);
 
   const handleAddShape = (type: "rect" | "circle" | "text" | "polygon") => {
@@ -384,6 +451,42 @@ export default function ProjectorPage() {
     setGridSize(newSize);
   };
 
+  // Save Functionality
+  const handleSave = () => {
+      const saveData = {
+          version: '1.0.0',
+          timestamp: new Date().toISOString(),
+          canvas: {
+              width: windowSize.width,
+              height: windowSize.height,
+              gridSize: gridSize
+          },
+          calibration: {
+              corners: corners,
+              projectionMode: projectionMode
+          },
+          shapes: shapes
+      };
+      
+      console.log("=== SAving Data ===", saveData);
+
+      if (stepId) {
+          storage.updateStep(stepId, saveData);
+          router.push('/steps'); // Redirect to table logic
+      } else {
+          console.warn("No step ID found, cannot save to storage step.");
+      }
+  };
+
+  // Debug Logs
+  console.log("Render Debug:", {
+    windowSize,
+    shapesCount: shapes.length,
+    cornersLength: corners.length,
+    transformStyle,
+    firstShape: shapes[0]
+  });
+
   return (
     <Box
       sx={{
@@ -444,7 +547,7 @@ export default function ProjectorPage() {
                     y: 0,
                     points: currentPoints,
                     fill: "transparent",
-                    stroke: "yellow", // Highlight internal drawing line
+                    stroke: "#ffffff",
                     strokeWidth: 2,
                     opacity: 0.8,
                     rotation: 0,
@@ -464,6 +567,9 @@ export default function ProjectorPage() {
           onSelectTool={handleToolSelect}
           onUndo={undo}
           onRedo={redo}
+          onSave={handleSave}
+          onCopy={handleCopy}
+          onPaste={handlePaste}
           canUndo={canUndo}
           canRedo={canRedo}
         />
@@ -495,3 +601,4 @@ export default function ProjectorPage() {
     </Box>
   );
 }
+

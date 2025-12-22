@@ -11,7 +11,7 @@ import {
   MenuItem,
   FormControl,
 } from "@mui/material";
-import { ShapeConfig, AnimationType } from "@/lib/types/Shape";
+import { ShapeConfig } from "@/lib/types/Shape";
 
 interface PropertyPanelProps {
   selectedShapes: ShapeConfig[];
@@ -38,7 +38,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
         top: 80,
         width: 256,
         p: 2,
-        borderRadius: 3,
+        borderRadius: "12px",
         bgcolor: "rgba(23, 23, 23, 0.8)",
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -70,7 +70,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
                 backgroundColor: "rgba(0,0,0,0.3)",
                 color: "white",
                 border: "1px solid rgba(255,255,255,0.2)",
-                borderRadius: "4px",
+                borderRadius: "12px",
                 marginBottom: "8px",
               }}
             />
@@ -135,7 +135,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
               value={primaryShape.fontSize || 20}
               min={10}
               max={200}
-              onChange={(_, val) => onChange("fontSize", val as number)}
+              onChange={(_, val) => onChange("fontSize", val)}
               size="small"
               sx={{ color: "white" }}
             />
@@ -158,12 +158,17 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
               checked={primaryShape.fillEnabled ?? true}
               onChange={(e) => onChange("fillEnabled", e.target.checked)}
               size="small"
-              color="secondary"
+              color="primary"
             />
           </Box>
           {(primaryShape.fillEnabled ?? true) && (
             <Box
-              sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                mt: 0.5,
+              }}
             >
               <Box
                 component="input"
@@ -173,7 +178,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
                 sx={{
                   width: 32,
                   height: 32,
-                  borderRadius: 1,
+                  borderRadius: "12px",
                   border: "none",
                   cursor: "pointer",
                   bgcolor: "transparent",
@@ -203,7 +208,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
               checked={primaryShape.strokeEnabled ?? false}
               onChange={(e) => onChange("strokeEnabled", e.target.checked)}
               size="small"
-              color="secondary"
+              color="primary"
             />
           </Box>
           {(primaryShape.strokeEnabled ?? false) && (
@@ -217,7 +222,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
                   sx={{
                     width: 32,
                     height: 32,
-                    borderRadius: 1,
+                    borderRadius: "12px",
                     border: "none",
                     cursor: "pointer",
                     bgcolor: "transparent",
@@ -228,7 +233,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
                   value={primaryShape.strokeWidth}
                   min={1}
                   max={20}
-                  onChange={(_, val) => onChange("strokeWidth", val as number)}
+                  onChange={(_, val) => onChange("strokeWidth", val)}
                   size="small"
                   sx={{ color: "white", ml: 1, flex: 1 }}
                 />
@@ -247,7 +252,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
             min={0}
             max={1}
             step={0.1}
-            onChange={(_, val) => onChange("opacity", val as number)}
+            onChange={(_, val) => onChange("opacity", val)}
             size="small"
             sx={{ color: "white" }}
           />
@@ -258,15 +263,10 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
           <Typography variant="caption" sx={{ color: "grey.400" }}>
             Animation
           </Typography>
-          <Typography variant="caption" sx={{ color: "grey.400" }}>
-            Animation
-          </Typography>
           <FormControl fullWidth size="small" sx={{ mt: 0.5 }}>
             <Select
               value={primaryShape.animation || "none"}
-              onChange={(e) =>
-                onChange("animation", e.target.value as AnimationType)
-              }
+              onChange={(e) => onChange("animation", e.target.value)}
               sx={{
                 color: "white",
                 ".MuiOutlinedInput-notchedOutline": {
@@ -282,6 +282,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
                   color: "white",
                 },
                 bgcolor: "rgba(0,0,0,0.3)",
+                borderRadius: "12px",
               }}
               MenuProps={{
                 PaperProps: {
@@ -300,6 +301,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
                         },
                       },
                     },
+                    borderRadius: "12px",
                   },
                 },
               }}
@@ -325,7 +327,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
               backgroundColor: "rgba(255, 68, 68, 0.2)",
               color: "#ff4444",
               border: "1px solid rgba(255, 68, 68, 0.3)",
-              borderRadius: "4px",
+              borderRadius: "12px",
               cursor: "pointer",
               fontWeight: "bold",
               transition: "all 0.2s",
@@ -334,6 +336,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
               (e.currentTarget.style.backgroundColor = "rgba(255, 68, 68, 0.3)")
             }
             onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(255, 68, 68, 0.2)")
+            }
+            onFocus={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(255, 68, 68, 0.3)")
+            }
+            onBlur={(e) =>
               (e.currentTarget.style.backgroundColor = "rgba(255, 68, 68, 0.2)")
             }
           >

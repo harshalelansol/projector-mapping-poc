@@ -12,12 +12,18 @@ import TextFieldsIcon from "@mui/icons-material/TextFields";
 import CreateIcon from "@mui/icons-material/Create";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
+import SaveIcon from "@mui/icons-material/Save";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 
 interface ToolbarProps {
   activeTool: string;
   onSelectTool: (tool: string) => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  onSave?: () => void;
+  onCopy?: () => void;
+  onPaste?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
 }
@@ -27,6 +33,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onSelectTool,
   onUndo,
   onRedo,
+  onSave,
+  onCopy,
+  onPaste,
   canUndo = false,
   canRedo = false,
 }) => {
@@ -49,7 +58,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         transform: "translateY(-50%)",
         zIndex: 10,
         p: 1,
-        borderRadius: 3,
+        borderRadius: "12px",
         bgcolor: "rgba(23, 23, 23, 0.8)",
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -71,13 +80,31 @@ const Toolbar: React.FC<ToolbarProps> = ({
             },
             border: "none",
             marginY: 0.5,
-            borderRadius: "8px !important",
+            borderRadius: "12px !important",
           },
-          mb: 1, // Spacing
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
-          pb: 1,
+          mb: 2,
+          pb: 2,
+          marginRight: 1,
         }}
       >
+        <Tooltip title="Save Project" placement="right">
+          <ToggleButton value="save" onClick={onSave} selected={false}>
+            <SaveIcon />
+          </ToggleButton>
+        </Tooltip>
+
+        <Tooltip title="Copy (Ctrl+C)" placement="right">
+          <ToggleButton value="copy" onClick={onCopy} selected={false}>
+            <ContentCopyIcon />
+          </ToggleButton>
+        </Tooltip>
+
+        <Tooltip title="Paste (Ctrl+V)" placement="right">
+          <ToggleButton value="paste" onClick={onPaste} selected={false}>
+            <ContentPasteIcon />
+          </ToggleButton>
+        </Tooltip>
+
         <Tooltip title="Undo (Ctrl+Z)" placement="right">
           <ToggleButton
             value="undo"
@@ -118,7 +145,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             },
             border: "none",
             marginY: 0.5,
-            borderRadius: "8px !important",
+            borderRadius: "12px !important",
           },
         }}
       >

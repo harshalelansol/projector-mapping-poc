@@ -4,6 +4,7 @@ import React from "react";
 import { Box } from "@mui/material";
 
 interface Point {
+  id: string;
   x: number;
   y: number;
 }
@@ -27,9 +28,9 @@ const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
   ) => {
     e.preventDefault();
     const startX =
-      "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+      "touches" in e ? e.touches[0].clientX : e.clientX;
     const startY =
-      "touches" in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+      "touches" in e ? e.touches[0].clientY : e.clientY;
 
     // Initial position
     const startPoint = corners[index];
@@ -38,17 +39,18 @@ const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
       const clientX =
         "touches" in moveEvent
           ? moveEvent.touches[0].clientX
-          : (moveEvent as MouseEvent).clientX;
+          : moveEvent.clientX;
       const clientY =
         "touches" in moveEvent
           ? moveEvent.touches[0].clientY
-          : (moveEvent as MouseEvent).clientY;
+          : moveEvent.clientY;
 
       const deltaX = clientX - startX;
       const deltaY = clientY - startY;
 
       const newCorners = [...corners];
       newCorners[index] = {
+        ...startPoint, // Preserve ID
         x: startPoint.x + deltaX,
         y: startPoint.y + deltaY,
       };
@@ -56,16 +58,16 @@ const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
     };
 
     const upHandler = () => {
-      window.removeEventListener("mousemove", moveHandler);
-      window.removeEventListener("touchmove", moveHandler);
-      window.removeEventListener("mouseup", upHandler);
-      window.removeEventListener("touchend", upHandler);
+      globalThis.removeEventListener("mousemove", moveHandler);
+      globalThis.removeEventListener("touchmove", moveHandler);
+      globalThis.removeEventListener("mouseup", upHandler);
+      globalThis.removeEventListener("touchend", upHandler);
     };
 
-    window.addEventListener("mousemove", moveHandler);
-    window.addEventListener("touchmove", moveHandler);
-    window.addEventListener("mouseup", upHandler);
-    window.addEventListener("touchend", upHandler);
+    globalThis.addEventListener("mousemove", moveHandler);
+    globalThis.addEventListener("touchmove", moveHandler);
+    globalThis.addEventListener("mouseup", upHandler);
+    globalThis.addEventListener("touchend", upHandler);
   };
 
   return (
@@ -93,7 +95,7 @@ const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
       </svg>
       {corners.map((corner, i) => (
         <Box
-          key={i}
+          key={corner.id}
           onMouseDown={(e) => handleDrag(i, e)}
           onTouchStart={(e) => handleDrag(i, e)}
           sx={{
@@ -104,7 +106,7 @@ const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
             height: 20,
             transform: "translate(-50%, -50%)",
             bgcolor: "cyan",
-            borderRadius: "50%",
+            borderRadius: "12px",
             cursor: "move",
             pointerEvents: "auto",
             border: "2px solid white",

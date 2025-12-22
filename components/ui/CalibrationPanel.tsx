@@ -33,7 +33,7 @@ const CalibrationPanel: React.FC<CalibrationPanelProps> = ({
         transform: "translateX(-50%)",
         width: 400,
         p: 2,
-        borderRadius: 3,
+        borderRadius: "12px",
         bgcolor: "rgba(23, 23, 23, 0.9)",
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -74,7 +74,7 @@ const CalibrationPanel: React.FC<CalibrationPanelProps> = ({
             value={gridSize}
             min={20}
             max={200}
-            onChange={(_, val) => setGridSize(val as number)}
+            onChange={(_, val) => setGridSize(val)}
             size="small"
             sx={{ color: "white" }}
           />

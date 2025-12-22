@@ -5,9 +5,9 @@ export const metadata = {
   description:
     "Design, calibrate, and transform surfaces with our advanced mapping tool.",
   icons: {
-    icon: "/assets/images/favicon_icon.png",
-    shortcut: "/assets/images/favicon_icon.png",
-    apple: "/assets/images/favicon_icon.png",
+    icon: "/assets/images/favicon_logo.png",
+    shortcut: "/assets/images/favicon_logo.png",
+    apple: "/assets/images/favicon_logo.png",
   },
 };
 

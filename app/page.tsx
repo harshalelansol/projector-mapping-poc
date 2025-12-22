@@ -1,13 +1,27 @@
 "use client";
 
-import React from "react";
-import { Box, Typography, Button, Container } from "@mui/material";
-import Link from "next/link";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Container,
+  CircularProgress,
+} from "@mui/material";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleStart = () => {
+    setIsLoading(true);
+    router.push("/steps");
+  };
+
   return (
     <Box
       sx={{
@@ -35,7 +49,7 @@ export default function LandingPage() {
           position: "absolute",
           width: 500,
           height: 500,
-          borderRadius: "50%",
+          borderRadius: "12px",
           background: "linear-gradient(45deg, #00ff88, #00aaff)",
           filter: "blur(100px)",
           top: "20%",
@@ -57,7 +71,7 @@ export default function LandingPage() {
           position: "absolute",
           width: 600,
           height: 600,
-          borderRadius: "50%",
+          borderRadius: "12px",
           background: "linear-gradient(45deg, #ff0055, #ffaa00)",
           filter: "blur(120px)",
           bottom: "10%",
@@ -83,7 +97,7 @@ export default function LandingPage() {
         >
           <Box sx={{ mb: 3 }}>
             <Image
-              src="/assets/images/favicon_icon.png"
+              src="/assets/images/favicon_logo.png"
               alt="Projector Mapping Tool Logo"
               width={150}
               height={150}
@@ -133,28 +147,38 @@ export default function LandingPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Link href="/projector" passHref>
-            <Button
-              variant="contained"
-              size="large"
-              endIcon={<PlayArrowIcon />}
-              sx={{
-                borderRadius: "50px",
-                padding: "16px 48px",
-                fontSize: "1.2rem",
-                fontWeight: "bold",
-                background: "linear-gradient(45deg, #2196f3, #21cbf3)",
-                boxShadow: "0 10px 30px rgba(33, 203, 243, 0.3)",
-                "&:hover": {
-                  background: "linear-gradient(45deg, #1976d2, #00bcd4)",
-                  boxShadow: "0 20px 40px rgba(33, 203, 243, 0.5)",
-                },
-                textTransform: "none",
-              }}
-            >
-              Start Projector Mapping
-            </Button>
-          </Link>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleStart}
+            disabled={isLoading}
+            endIcon={
+              isLoading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                <PlayArrowIcon />
+              )
+            }
+            sx={{
+              borderRadius: "12px",
+              padding: "16px 48px",
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+              background: "linear-gradient(45deg, #2196f3, #21cbf3)",
+              boxShadow: "0 10px 30px rgba(33, 203, 243, 0.3)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #1976d2, #00bcd4)",
+                boxShadow: "0 20px 40px rgba(33, 203, 243, 0.5)",
+              },
+              "&.Mui-disabled": {
+                background: "rgba(33, 203, 243, 0.3)",
+                color: "rgba(255,255,255,0.5)",
+              },
+              textTransform: "none",
+            }}
+          >
+            {isLoading ? "Loading..." : "Start Projector Mapping"}
+          </Button>
         </motion.div>
       </Container>
     </Box>
