@@ -12,6 +12,7 @@ import { Box } from "@mui/material";
 import useHistory from "@/hooks/useHistory";
 import { savedProjectData } from "@/lib/data/savedProject";
 import { useSearchParams, useRouter } from "next/navigation";
+import { openProjectorWindow } from "@/lib/utils/window";
 import { storage } from "@/lib/utils/storage";
 
 // Polyfill for uuid
@@ -178,6 +179,47 @@ export default function ProjectorPage() {
         ]);
     }
   }, []);
+
+  // Broadcast Channel Logic
+  const channelRef = useRef<BroadcastChannel | null>(null);
+
+  useEffect(() => {
+    channelRef.current = new BroadcastChannel("projector-data");
+    
+    // Listen for viewer ready to send immediate sync
+    channelRef.current.onmessage = (event) => {
+        if (event.data.type === "VIEWER_READY") {
+            broadcastState();
+        }
+    };
+
+    return () => {
+      channelRef.current?.close();
+    };
+  }, []);
+
+  const broadcastState = () => {
+    if (!channelRef.current) return;
+    channelRef.current.postMessage({
+        type: "SYNC_STATE",
+        payload: {
+            shapes,
+            corners,
+            gridSize,
+            projectionMode
+        }
+    });
+  };
+
+  // Sync whenever state changes
+  useEffect(() => {
+    broadcastState();
+  }, [shapes, corners, gridSize, projectionMode]);
+
+  const handleOpenProjector = async () => {
+    // Attempt to open on the secondary screen using robust helper
+    await openProjectorWindow("/projector/view");
+  };
 
   const handleAddShape = (type: "rect" | "circle" | "text" | "polygon") => {
     const center = { x: windowSize.width / 2, y: windowSize.height / 2 };
@@ -471,6 +513,11 @@ export default function ProjectorPage() {
       console.log("=== SAving Data ===", saveData);
 
       if (stepId) {
+          // Send close signal to projector view
+          if (channelRef.current) {
+              channelRef.current.postMessage({ type: "CLOSE" });
+          }
+
           storage.updateStep(stepId, saveData);
           router.push('/steps'); // Redirect to table logic
       } else {
@@ -572,6 +619,7 @@ export default function ProjectorPage() {
           onPaste={handlePaste}
           canUndo={canUndo}
           canRedo={canRedo}
+          onOpenProjector={handleOpenProjector}
         />
       )}
       {!projectionMode && (
@@ -590,12 +638,13 @@ export default function ProjectorPage() {
         setProjectionMode={setProjectionMode}
       />
 
-      {windowSize.width > 0 && corners.length === 4 && projectionMode && (
+      {windowSize.width > 0 && corners.length === 4 && (
         <ProjectionOverlay
           corners={corners}
           setCorners={setCorners}
           width={windowSize.width}
           height={windowSize.height}
+          readOnly={!projectionMode}
         />
       )}
     </Box>

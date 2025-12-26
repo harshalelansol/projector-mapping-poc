@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Layer, Line } from "react-konva";
+import { GRID_COLOR } from "@/lib/theme";
 
 interface GridLayerProps {
   width: number;
@@ -26,7 +27,7 @@ const GridLayer: React.FC<GridLayerProps> = ({
       <Line
         key={`v-${i}`}
         points={[i * gridSize, 0, i * gridSize, height]}
-        stroke="rgba(255, 255, 255, 0.1)"
+        stroke={GRID_COLOR}
         strokeWidth={1}
       />
     );
@@ -38,7 +39,7 @@ const GridLayer: React.FC<GridLayerProps> = ({
       <Line
         key={`h-${j}`}
         points={[0, j * gridSize, width, j * gridSize]}
-        stroke="rgba(255, 255, 255, 0.1)"
+        stroke={GRID_COLOR}
         strokeWidth={1}
       />
     );

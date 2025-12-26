@@ -16,12 +16,14 @@ interface AnimatedShapeProps {
   shape: ShapeConfig;
   onSelect: (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => void;
   onChange: (newAttrs: Partial<ShapeConfig>) => void;
+  draggable?: boolean;
 }
 
 const AnimatedShape: React.FC<AnimatedShapeProps> = ({
   shape,
   onSelect,
   onChange,
+  draggable = true,
 }) => {
   const shapeRef = useRef<Konva.Shape>(null);
 
@@ -36,7 +38,7 @@ const AnimatedShape: React.FC<AnimatedShapeProps> = ({
     rotation: shape.rotation,
     scaleX: shape.scaleX,
     scaleY: shape.scaleY,
-    draggable: true,
+    draggable: draggable,
     // Avoid passing opacity if blinking, let Tween control it.
     opacity:
       shape.animation === "blink" || shape.animation === "sparkle"

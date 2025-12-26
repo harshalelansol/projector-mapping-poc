@@ -15,6 +15,7 @@ import RedoIcon from "@mui/icons-material/Redo";
 import SaveIcon from "@mui/icons-material/Save";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
+import CastConnectedIcon from '@mui/icons-material/CastConnected';
 
 interface ToolbarProps {
   activeTool: string;
@@ -24,6 +25,7 @@ interface ToolbarProps {
   onSave?: () => void;
   onCopy?: () => void;
   onPaste?: () => void;
+  onOpenProjector?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
 }
@@ -36,6 +38,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onSave,
   onCopy,
   onPaste,
+  onOpenProjector,
   canUndo = false,
   canRedo = false,
 }) => {
@@ -87,6 +90,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
           marginRight: 1,
         }}
       >
+        <Tooltip title="Open Projector Window" placement="right">
+            <ToggleButton value="projector" onClick={onOpenProjector} selected={false}>
+            <CastConnectedIcon />
+            </ToggleButton>
+        </Tooltip>
+
         <Tooltip title="Save Project" placement="right">
           <ToggleButton value="save" onClick={onSave} selected={false}>
             <SaveIcon />

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Box } from "@mui/material";
+import { GRID_COLOR } from "@/lib/theme";
 
 interface Point {
   id: string;
@@ -14,6 +15,7 @@ interface ProjectionOverlayProps {
   setCorners: (corners: Point[]) => void;
   width: number;
   height: number;
+  readOnly?: boolean;
 }
 
 const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
@@ -21,11 +23,13 @@ const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
   setCorners,
   width,
   height,
+  readOnly = false,
 }) => {
   const handleDrag = (
     index: number,
     e: React.MouseEvent | React.TouchEvent
   ) => {
+    if (readOnly) return;
     e.preventDefault();
     const startX =
       "touches" in e ? e.touches[0].clientX : e.clientX;
@@ -88,12 +92,12 @@ const ProjectionOverlay: React.FC<ProjectionOverlayProps> = ({
         <path
           d={`M ${corners[0].x} ${corners[0].y} L ${corners[1].x} ${corners[1].y} L ${corners[2].x} ${corners[2].y} L ${corners[3].x} ${corners[3].y} Z`}
           fill="none"
-          stroke="cyan"
+          stroke={readOnly ? GRID_COLOR : "cyan"}
           strokeWidth="2"
           strokeDasharray="5,5"
         />
       </svg>
-      {corners.map((corner, i) => (
+      {!readOnly && corners.map((corner, i) => (
         <Box
           key={corner.id}
           onMouseDown={(e) => handleDrag(i, e)}

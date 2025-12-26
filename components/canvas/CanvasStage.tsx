@@ -18,6 +18,7 @@ interface CanvasStageProps {
   height: number;
   onStageClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   drawingShape?: ShapeConfig | null;
+  readOnly?: boolean;
 }
 
 const CanvasStage: React.FC<CanvasStageProps> = ({
@@ -31,6 +32,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
   height,
   onStageClick,
   drawingShape,
+  readOnly = false,
 }) => {
   const stageRef = useRef<Konva.Stage>(null);
 
@@ -53,8 +55,8 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
     <Stage
       width={width}
       height={height}
-      onMouseDown={checkDeselect}
-      onTouchStart={checkDeselect}
+      onMouseDown={readOnly ? undefined : checkDeselect}
+      onTouchStart={readOnly ? undefined : checkDeselect}
       ref={stageRef}
       style={{ background: "black" }}
     >
@@ -70,20 +72,23 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
             key={shape.id}
             shape={shape}
             onSelect={(e) => {
+              if (readOnly) return;
               // Use the event passed from AnimatedShape
               const isMulti = e.evt.ctrlKey || e.evt.metaKey;
               onSelect(shape.id, isMulti);
             }}
             onChange={(newAttrs) => {
+               if (readOnly) return;
               const newShapes = shapes.slice();
               newShapes[i] = { ...shape, ...newAttrs };
               onChange(newShapes);
             }}
+            draggable={!readOnly}
           />
         ))}
 
         {/* Temporary Drawing Shape */}
-        {drawingShape && (
+        {!readOnly && drawingShape && (
           <>
             <Line
               points={drawingShape.points || []}
@@ -112,7 +117,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
           </>
         )}
 
-        {selectedIds.length > 0 && (
+        {!readOnly && selectedIds.length > 0 && (
           <TransformerWrapper selectedIds={selectedIds} />
         )}
       </Layer>

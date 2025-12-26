@@ -24,6 +24,8 @@ import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from "@mui/ico
 import { useRouter } from "next/navigation";
 import { storage, ProjectStep } from "@/lib/utils/storage";
 
+import { openProjectorWindow } from "@/lib/utils/window";
+
 export default function StepsPage() {
   const router = useRouter();
   const [steps, setSteps] = useState<ProjectStep[]>([]);
@@ -35,13 +37,14 @@ export default function StepsPage() {
     setSteps(storage.getSteps());
   }, []);
 
-  const handleAddStep = () => {
+  const handleAddStep = async () => {
     if (!newStepName.trim()) return;
     const step = storage.addStep(newStepName);
     setOpen(false);
     setNewStepName("");
-    // Refresh list (optional if we redirect immediately)
-    // setSteps(storage.getSteps());
+    
+    // Open projector window
+    await openProjectorWindow("/projector/view");
 
     // Redirect to editor
     router.push(`/projector?stepId=${step.id}`);
@@ -54,7 +57,10 @@ export default function StepsPage() {
     }
   };
 
-  const handleEditStep = (id: string) => {
+  const handleEditStep = async (id: string) => {
+    // Open projector window
+    await openProjectorWindow("/projector/view");
+    
     router.push(`/projector?stepId=${id}`);
   };
 
