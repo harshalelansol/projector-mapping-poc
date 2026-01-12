@@ -221,6 +221,10 @@ export default function ProjectorPage() {
     await openProjectorWindow("/projector/view");
   };
 
+  const handleOpenGridProjector = async () => {
+      await openProjectorWindow("/projector/view", { mode: 'grid' });
+  };
+
   const handleAddShape = (type: "rect" | "circle" | "text" | "polygon") => {
     const center = { x: windowSize.width / 2, y: windowSize.height / 2 };
     let newShape: ShapeConfig;
@@ -620,6 +624,7 @@ export default function ProjectorPage() {
           canUndo={canUndo}
           canRedo={canRedo}
           onOpenProjector={handleOpenProjector}
+          onOpenGridProjector={handleOpenGridProjector}
         />
       )}
       {!projectionMode && (

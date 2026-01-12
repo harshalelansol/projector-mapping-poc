@@ -1,10 +1,13 @@
-export const openProjectorWindow = async (url: string) => {
+export const openProjectorWindow = async (url: string, options?: { mode?: 'default' | 'grid' }) => {
   // Config for the window
   const features = "menubar=no,toolbar=no,location=no,status=no,titlebar=no,scrollbars=no,fullscreen=yes,width=800,height=600";
   let targetLeft = 0;
   let targetTop = 0;
   let targetWidth = 800;
   let targetHeight = 600;
+
+  // Construct URL with query params
+  const fullUrl = options?.mode ? `${url}?mode=${options.mode}` : url;
 
   try {
     // Check for Window Management API support
@@ -28,7 +31,7 @@ export const openProjectorWindow = async (url: string) => {
         
         // Open with coordinates
         window.open(
-            url, 
+            fullUrl, 
             "ProjectorWindow", 
             `${features},left=${targetLeft},top=${targetTop},width=${targetWidth},height=${targetHeight}`
         );
@@ -46,5 +49,5 @@ export const openProjectorWindow = async (url: string) => {
   // Or we can try the naive approach again as a fallback.
   // We'll stick to the previous naive fallback but maybe larger offset?
   const naiveLeft = globalThis.screen.availWidth; 
-  window.open(url, "ProjectorWindow", `${features},left=${naiveLeft},top=0`);
+  window.open(fullUrl, "ProjectorWindow", `${features},left=${naiveLeft},top=0`);
 };

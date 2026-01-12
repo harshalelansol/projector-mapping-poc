@@ -7,7 +7,13 @@ import { getPerspectiveTransform } from "@/lib/utils/projection";
 import { ShapeConfig } from "@/lib/types/Shape";
 import { Box, Typography } from "@mui/material";
 
+import { useSearchParams } from "next/navigation";
+
 export default function ProjectorViewPage() {
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
+  const isGridOnly = mode === "grid";
+
   const [shapes, setShapes] = useState<ShapeConfig[]>([]);
   const [gridSize, setGridSize] = useState<number>(50);
   const [projectionMode, setProjectionMode] = useState<boolean>(false);
@@ -38,7 +44,7 @@ export default function ProjectorViewPage() {
       const { type, payload } = event.data;
       if (type === "SYNC_STATE") {
          // Payload should contain shapes, corners, gridSize, projectionMode
-         if (payload.shapes) setShapes(payload.shapes);
+         if (payload.shapes && !isGridOnly) setShapes(payload.shapes); // Only sync shapes if not grid only
          if (payload.corners) setCorners(payload.corners);
          if (payload.gridSize) setGridSize(payload.gridSize);
          if (payload.projectionMode !== undefined) setProjectionMode(payload.projectionMode);
@@ -104,21 +110,21 @@ export default function ProjectorViewPage() {
       >
         {windowSize.width > 0 && (
           <CanvasWrapper
-            shapes={shapes}
+            shapes={isGridOnly ? [] : shapes} // Force empty shapes in grid mode
             selectedIds={[]} // No selection in view mode
             onSelect={() => {}} // No op
             onChange={() => {}} // No op
             width={windowSize.width}
             height={windowSize.height}
-            gridEnabled={!projectionMode} 
+            gridEnabled={isGridOnly ? true : !projectionMode} 
             gridSize={gridSize}
             readOnly={true}
           />
         )}
       </Box>
 
-      {/* Projection Overlay (Passive Border) */}
-       {windowSize.width > 0 && corners.length === 4 && (
+      {/* Projection Overlay (Passive Border) - Hide in Grid Only mode */}
+       {!isGridOnly && windowSize.width > 0 && corners.length === 4 && (
         <ProjectionOverlay
           corners={corners}
           setCorners={() => {}} // Read-only

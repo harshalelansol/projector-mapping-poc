@@ -16,6 +16,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import CastConnectedIcon from '@mui/icons-material/CastConnected';
+import Grid4x4Icon from '@mui/icons-material/Grid4x4';
 
 interface ToolbarProps {
   activeTool: string;
@@ -26,6 +27,7 @@ interface ToolbarProps {
   onCopy?: () => void;
   onPaste?: () => void;
   onOpenProjector?: () => void;
+  onOpenGridProjector?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
 }
@@ -39,6 +41,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onCopy,
   onPaste,
   onOpenProjector,
+  onOpenGridProjector,
   canUndo = false,
   canRedo = false,
 }) => {
@@ -93,6 +96,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <Tooltip title="Open Projector Window" placement="right">
             <ToggleButton value="projector" onClick={onOpenProjector} selected={false}>
             <CastConnectedIcon />
+            </ToggleButton>
+        </Tooltip>
+        
+        <Tooltip title="Open Grid View (Kiosk)" placement="right">
+            <ToggleButton value="grid-projector" onClick={onOpenGridProjector} selected={false}>
+            <Grid4x4Icon />
             </ToggleButton>
         </Tooltip>
 
