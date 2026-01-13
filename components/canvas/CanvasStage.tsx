@@ -46,7 +46,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
 
     // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
+    if (clickedOnEmpty && !readOnly) {
       onSelect(null, false);
     }
   };
@@ -60,17 +60,20 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
       ref={stageRef}
       style={{ background: "black" }}
     >
-      <GridLayer
-        width={width}
-        height={height}
-        gridSize={gridSize}
-        visible={gridEnabled}
-      />
+      {!readOnly && (
+        <GridLayer
+          width={width}
+          height={height}
+          gridSize={gridSize}
+          visible={gridEnabled}
+        />
+      )}
       <Layer>
         {shapes.map((shape, i) => (
           <AnimatedShape
             key={shape.id}
             shape={shape}
+            draggable={!readOnly}
             onSelect={(e) => {
               if (readOnly) return;
               // Use the event passed from AnimatedShape
@@ -78,7 +81,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
               onSelect(shape.id, isMulti);
             }}
             onChange={(newAttrs) => {
-               if (readOnly) return;
+              if (readOnly) return;
               const newShapes = shapes.slice();
               newShapes[i] = { ...shape, ...newAttrs };
               onChange(newShapes);
