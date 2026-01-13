@@ -18,6 +18,7 @@ interface CanvasStageProps {
   height: number;
   onStageClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   drawingShape?: ShapeConfig | null;
+  readOnly?: boolean;
 }
 
 const CanvasStage: React.FC<CanvasStageProps> = ({
@@ -31,6 +32,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
   height,
   onStageClick,
   drawingShape,
+  readOnly = false,
 }) => {
   const stageRef = useRef<Konva.Stage>(null);
 
@@ -44,7 +46,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
 
     // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
+    if (clickedOnEmpty && !readOnly) {
       onSelect(null, false);
     }
   };
@@ -58,23 +60,28 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
       ref={stageRef}
       style={{ background: "black" }}
     >
-      <GridLayer
-        width={width}
-        height={height}
-        gridSize={gridSize}
-        visible={gridEnabled}
-      />
+      {!readOnly && (
+        <GridLayer
+            width={width}
+            height={height}
+            gridSize={gridSize}
+            visible={gridEnabled}
+        />
+      )}
       <Layer>
         {shapes.map((shape, i) => (
           <AnimatedShape
             key={shape.id}
             shape={shape}
+            draggable={!readOnly}
             onSelect={(e) => {
+              if (readOnly) return;
               // Use the event passed from AnimatedShape
               const isMulti = e.evt.ctrlKey || e.evt.metaKey;
               onSelect(shape.id, isMulti);
             }}
             onChange={(newAttrs) => {
+              if (readOnly) return;
               const newShapes = shapes.slice();
               newShapes[i] = { ...shape, ...newAttrs };
               onChange(newShapes);
@@ -83,7 +90,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
         ))}
 
         {/* Temporary Drawing Shape */}
-        {drawingShape && (
+        {!readOnly && drawingShape && (
           <>
             <Line
               points={drawingShape.points || []}
@@ -112,7 +119,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({
           </>
         )}
 
-        {selectedIds.length > 0 && (
+        {!readOnly && selectedIds.length > 0 && (
           <TransformerWrapper selectedIds={selectedIds} />
         )}
       </Layer>
